@@ -1,27 +1,19 @@
-name: Deploy Frontend to main branch /docs folder
+name: Deploy to GitHub Pages
 
 on:
-  # Runs on pushes targeting the main branch
   push:
-    branches: ["main"]
-    paths:
-      - 'musicmood-frontend/**' # Only run if files in musicmood-frontend change
-      - '.github/workflows/deploy-frontend.yml' # Also run if this workflow file changes
+    branches:
+      - main # Trigger on push to the main branch
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow pushing to the main branch
+# Grant necessary permissions for the workflow to interact with GitHub Pages
 permissions:
-  contents: write
-
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages-main-docs-deployment"
-  cancel-in-progress: true
+  contents: read    # To checkout the repository
+  pages: write      # To deploy to GitHub Pages
+  id-token: write   # To authenticate with GitHub Pages
 
 jobs:
-  build-and-deploy:
+  # Build job: prepares the artifact for deployment
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -30,24 +22,31 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: musicmood-frontend/package-lock.json
+          node-version: '20' # You can adjust this if your project needs a specific Node.js version
 
-      - name: Install dependencies
-        working-directory: ./musicmood-frontend
-        run: npm ci
+      - name: Install dependencies and Build React app
+        working-directory: ./musicmood-frontend # Important: run these commands in your app's folder
+        run: |
+          npm install
+          npm run build
 
-      - name: Build
-        working-directory: ./musicmood-frontend
-        run: CI=false npm run build # Output goes to musicmood-frontend/build
+      - name: Setup Pages
+        uses: actions/configure-pages@v5 # Configures GitHub Pages for deployment
 
-      - name: Deploy to /docs folder on main branch
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # Uses the default GITHUB_TOKEN
-          branch: main # The branch to deploy to (commit to)
-          folder: musicmood-frontend/build # The folder in your repo containing your build assets
-          target-folder: docs # The folder on the main branch to deploy the assets to
-          clean: true # Automatically remove deleted files from the target-folder
-          commit-message: "Deploy frontend build to /docs [skip ci]" # [skip ci] to prevent re-triggering the workflow
+          # Upload the build output from the 'musicmood-frontend/build' directory
+          path: ./musicmood-frontend/build
+
+  # Deploy job: deploys the artifact to GitHub Pages
+  deploy:
+    needs: build # This job depends on the 'build' job completing successfully
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # Sets the deployment URL output
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # Deploys the artifact
