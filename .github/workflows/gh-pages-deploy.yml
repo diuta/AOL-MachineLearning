@@ -19,17 +19,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # If you have a build step (e.g., using Node.js, Jekyll, etc.),
-      # you would add it here. For example:
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: '20' # Specify your Node.js version
-      # - name: Install dependencies
-      #   run: npm install
-      # - name: Build project
-      #   run: npm run build # Ensure build output is in a directory like 'dist' or 'build'
-      # Then, update the 'path' in the 'Upload artifact' step below.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # You can adjust this if your project needs a specific Node.js version
+
+      - name: Install dependencies and Build React app
+        working-directory: ./musicmood-frontend # Important: run these commands in your app's folder
+        run: |
+          npm install
+          npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5 # Configures GitHub Pages for deployment
@@ -37,8 +36,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload contents of the 'musicmood-frontend' directory.
-          path: ./musicmood-frontend
+          # Upload the build output from the 'musicmood-frontend/build' directory
+          path: ./musicmood-frontend/build
 
   # Deploy job: deploys the artifact to GitHub Pages
   deploy:
