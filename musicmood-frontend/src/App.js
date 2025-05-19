@@ -2,18 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as ort from 'onnxruntime-web';
 import './App.css';
 
-const MAX_RECOMMENDATIONS = 5; // Max number of songs to recommend
+const MAX_POPULAR_RECOMMENDATIONS = 5;
+const MAX_RANDOM_RECOMMENDATIONS = 5;
 
 function App() {
   const [session, setSession] = useState(null);
   const [inputText, setInputText] = useState('');
-  const [predictedMoodResult, setPredictedMoodResult] = useState(''); // Stores the actual predicted mood string
+  const [predictedMoodResult, setPredictedMoodResult] = useState('');
   const [isLoadingModel, setIsLoadingModel] = useState(true);
   const [isLoadingSongData, setIsLoadingSongData] = useState(true);
   const [songData, setSongData] = useState([]);
-  const [recommendedSongs, setRecommendedSongs] = useState([]);
+  const [popularRecommendedSongs, setPopularRecommendedSongs] = useState([]);
+  const [randomRecommendedSongs, setRandomRecommendedSongs] = useState([]);
   const [error, setError] = useState('');
-  const [infoMessage, setInfoMessage] = useState('Initializing...'); // For general info like loading
+  const [infoMessage, setInfoMessage] = useState('Initializing...');
 
   const onnxRuntimeInitialized = useRef(false);
 
@@ -69,16 +71,50 @@ function App() {
     setInputText(event.target.value);
   };
 
+  // Fisher-Yates (Knuth) Shuffle algorithm
+  function shuffleArray(array) {
+    let currentIndex = array.length,  randomIndex;
+    // While there remain elements to shuffle.
+    while (currentIndex !== 0) {
+      // Pick a remaining element.
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      // And swap it with the current element.
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+    return array;
+  }
+
   const recommendSongsByMood = (mood) => {
     if (!songData || songData.length === 0 || !mood) {
-      setRecommendedSongs([]);
+      setPopularRecommendedSongs([]);
+      setRandomRecommendedSongs([]);
       return;
     }
-    const filteredSongs = songData
-      .filter(song => song.mood && mood && song.mood.toLowerCase() === mood.toLowerCase())
+    const allMatchingSongs = songData
+      .filter(song => song.mood && mood && song.mood.toLowerCase() === mood.toLowerCase());
+
+    // Popular songs
+    const popularSongs = [...allMatchingSongs] // Create a copy before sorting
       .sort((a, b) => parseFloat(b.popularity || 0) - parseFloat(a.popularity || 0))
-      .slice(0, MAX_RECOMMENDATIONS);
-    setRecommendedSongs(filteredSongs);
+      .slice(0, MAX_POPULAR_RECOMMENDATIONS);
+    setPopularRecommendedSongs(popularSongs);
+
+    // Random songs (different from popular ones if possible)
+    const popularSongIds = new Set(popularSongs.map(song => song.id)); // Assuming songs have a unique 'id' field
+    let remainingSongs = allMatchingSongs.filter(song => !popularSongIds.has(song.id));
+
+    // If not enough unique songs, allow picking from all matching ones for random selection, but try to prioritize different ones
+    if (remainingSongs.length < MAX_RANDOM_RECOMMENDATIONS && allMatchingSongs.length > popularSongs.length) {
+        // If remaining are too few, but there are more songs than popular ones, use all matching ones for random pool.
+        // This increases chance of variety if overlap is forced.
+        remainingSongs = allMatchingSongs;
+    }
+
+    const shuffledSongs = shuffleArray([...remainingSongs]); // Shuffle a copy
+    const randomSongs = shuffledSongs.slice(0, MAX_RANDOM_RECOMMENDATIONS);
+    setRandomRecommendedSongs(randomSongs);
   };
 
   const handlePredict = async () => {
@@ -91,26 +127,28 @@ function App() {
     if (!inputText.trim()) {
       setError("Please describe your feeling first!");
       setPredictedMoodResult('');
-      setRecommendedSongs([]);
+      setPopularRecommendedSongs([]);
+      setRandomRecommendedSongs([]);
       return;
     }
 
     try {
       setError('');
-      setInfoMessage(''); // Clear any lingering info messages
+      setInfoMessage('');
       setPredictedMoodResult('Finding your vibe...');
-      setRecommendedSongs([]);
+      setPopularRecommendedSongs([]);
+      setRandomRecommendedSongs([]);
 
-      const input = [inputText]; 
+      const input = [inputText];
       const tensorInput = new ort.Tensor('string', input, [input.length]);
-      const feeds = { [session.inputNames[0]]: tensorInput }; 
+      const feeds = { [session.inputNames[0]]: tensorInput };
       const actualOutputName = session.outputNames[0];
-      const requestedOutputs = [actualOutputName]; 
+      const requestedOutputs = [actualOutputName];
       const results = await session.run(feeds, requestedOutputs);
       const outputTensor = results[actualOutputName];
 
       if (outputTensor && outputTensor.data && outputTensor.data.length > 0) {
-        const mood = outputTensor.data[0]; 
+        const mood = outputTensor.data[0];
         setPredictedMoodResult(mood);
         recommendSongsByMood(mood);
       } else {
@@ -121,7 +159,8 @@ function App() {
       console.error(`Error during prediction: ${e}`);
       setError(`Prediction error: ${e.message}.`);
       setPredictedMoodResult('');
-      setRecommendedSongs([]);
+      setPopularRecommendedSongs([]);
+      setRandomRecommendedSongs([]);
     }
   };
 
@@ -131,7 +170,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Mood Melody AI</h1>
-        
+
         {showLoadingState && (
           <div className="loading-container">
             <div className="spinner"></div>
@@ -140,7 +179,7 @@ function App() {
         )}
 
         {error && <p className="error-text">{error}</p>}
-        
+
         {!showLoadingState && session && (
           <div className="input-section">
             <textarea
@@ -160,19 +199,38 @@ function App() {
             <div className="predicted-mood">
               <h3>Your Vibe: {predictedMoodResult}</h3>
             </div>
-            {recommendedSongs.length > 0 ? (
-              <div className="recommendations-container">
-                <h4>Here are some tunes for your mood:</h4>
+
+            {/* Popular Recommendations */}
+            {popularRecommendedSongs.length > 0 && (
+              <div className="recommendations-container popular-recommendations">
+                <h4>Top Picks for Your Mood:</h4>
                 <ul className="song-list">
-                  {recommendedSongs.map((song, index) => (
-                    <li key={index} className="song-item">
+                  {popularRecommendedSongs.map((song, index) => (
+                    <li key={`popular-${song.id || index}`} className="song-item">
                       <strong>{song.name}</strong> by {song.artist}<br />
                       <em>Album: {song.album} (Popularity: {song.popularity})</em>
                     </li>
                   ))}
                 </ul>
               </div>
-            ) : (
+            )}
+
+            {/* Random Recommendations */}
+            {randomRecommendedSongs.length > 0 && (
+              <div className="recommendations-container random-recommendations">
+                <h4>More Ideas (Random Picks):</h4>
+                <ul className="song-list">
+                  {randomRecommendedSongs.map((song, index) => (
+                    <li key={`random-${song.id || index}`} className="song-item">
+                      <strong>{song.name}</strong> by {song.artist}<br />
+                      <em>Album: {song.album} (Popularity: {song.popularity})</em>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {popularRecommendedSongs.length === 0 && randomRecommendedSongs.length === 0 && (
                 <p className="no-songs-text">Looks like we couldn't find specific tracks for this vibe in our current list. Try another feeling!</p>
             )}
           </div>
