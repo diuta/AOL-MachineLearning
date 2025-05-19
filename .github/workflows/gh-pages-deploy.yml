@@ -37,10 +37,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository root.
-          # If your site files are in a specific folder (e.g., 'dist', 'public', 'docs'),
-          # update the path: e.g., path: ./dist
-          path: .
+          # Upload contents of the 'musicmood-frontend' directory.
+          path: ./musicmood-frontend
 
   # Deploy job: deploys the artifact to GitHub Pages
   deploy:
