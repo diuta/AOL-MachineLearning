@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to the main branch
+
+# Grant necessary permissions for the workflow to interact with GitHub Pages
+permissions:
+  contents: read    # To checkout the repository
+  pages: write      # To deploy to GitHub Pages
+  id-token: write   # To authenticate with GitHub Pages
+
+jobs:
+  # Build job: prepares the artifact for deployment
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # If you have a build step (e.g., using Node.js, Jekyll, etc.),
+      # you would add it here. For example:
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20' # Specify your Node.js version
+      # - name: Install dependencies
+      #   run: npm install
+      # - name: Build project
+      #   run: npm run build # Ensure build output is in a directory like 'dist' or 'build'
+      # Then, update the 'path' in the 'Upload artifact' step below.
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5 # Configures GitHub Pages for deployment
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository root.
+          # If your site files are in a specific folder (e.g., 'dist', 'public', 'docs'),
+          # update the path: e.g., path: ./dist
+          path: .
+
+  # Deploy job: deploys the artifact to GitHub Pages
+  deploy:
+    needs: build # This job depends on the 'build' job completing successfully
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # Sets the deployment URL output
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # Deploys the artifact 
