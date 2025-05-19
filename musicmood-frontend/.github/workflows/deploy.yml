@@ -1,12 +1,9 @@
 name: Build and Deploy React App
 
-on:
-  push:
-    branches:
-      - main # Or your default branch
+on: [push] # Trigger on every push to any branch
 
 jobs:
-  build:
+  build-and-deploy: # Renamed job for clarity
     runs-on: ubuntu-latest
 
     steps:
@@ -19,16 +16,22 @@ jobs:
           node-version: '18' # Specify your desired Node.js version
 
       - name: Install dependencies
+        working-directory: ./musicmood-frontend
         run: npm install
-        working-directory: ./musicmood-frontend # Adjust if your package.json is in a different location
 
       - name: Build
+        working-directory: ./musicmood-frontend
         run: npm run build
-        working-directory: ./musicmood-frontend # Adjust if your package.json is in a different location
+        env:
+          # Ensures correct asset paths for GitHub Pages subdirectory hosting
+          # Example: /MachineLearning/ for diuta.github.io/MachineLearning/
+          # This should match the 'homepage' field in package.json (or its path part)
+          PUBLIC_URL: /MachineLearning
 
-      # Add deployment steps here, for example to GitHub Pages
-      # - name: Deploy to GitHub Pages
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./musicmood-frontend/build # Or your build output directory 
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./musicmood-frontend/build # Directory containing the build output
+          # The default branch this action pushes to is 'gh-pages'
+          # Ensure your repository's GitHub Pages settings are configured to use this branch.
