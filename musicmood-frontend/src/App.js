@@ -25,12 +25,17 @@ function App() {
       setIsLoadingSongData(true);
       setInfoMessage('Loading AI model...');
       try {
-        ort.env.wasm.wasmPaths = {
-          'ort-wasm.wasm': '/onnxruntime-web/dist/ort-wasm.wasm',
-          'ort-wasm-simd.wasm': '/onnxruntime-web/dist/ort-wasm-simd.wasm',
-          'ort-wasm-threaded.wasm': '/onnxruntime-web/dist/ort-wasm-threaded.wasm'
-        };
-        const newSession = await ort.InferenceSession.create('/pipeline.onnx');
+        // ort.env.wasm.wasmPaths = { // Previous local/public path setup
+        //   'ort-wasm.wasm': `${process.env.PUBLIC_URL}/onnxruntime-web/dist/ort-wasm.wasm`,
+        //   'ort-wasm-simd.wasm': `${process.env.PUBLIC_URL}/onnxruntime-web/dist/ort-wasm-simd.wasm`,
+        //   'ort-wasm-threaded.wasm': `${process.env.PUBLIC_URL}/onnxruntime-web/dist/ort-wasm-threaded.wasm`
+        // };
+
+        // Set WASM paths to JSDelivr CDN
+        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
+
+        const modelPath = `${process.env.PUBLIC_URL}/pipeline.onnx`;
+        const newSession = await ort.InferenceSession.create(modelPath);
         setSession(newSession);
         console.log("ONNX session created. Inputs:", newSession.inputNames, "Outputs:", newSession.outputNames);
         setInfoMessage('AI Model loaded. Loading song data...');
@@ -46,7 +51,8 @@ function App() {
 
       setInfoMessage('Loading song library...');
       try {
-        const response = await fetch('/data_moods.json');
+        const dataPath = `${process.env.PUBLIC_URL}/data_moods.json`;
+        const response = await fetch(dataPath);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setSongData(data);
