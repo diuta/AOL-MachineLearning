@@ -3,10 +3,11 @@ name: Deploy to GitHub Pages
 on:
   # Runs on pushes targeting the main branch
   push:
-    branches: ["main"]
+    branches:
+      - main
     paths: # Keep paths to only trigger on frontend changes or workflow changes
-      - 'musicmood-frontend/**'
-      - '.github/workflows/deploy-frontend.yml'
+      - musicmood-frontend/**
+      - .github/workflows/deploy-frontend.yml
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -20,7 +21,7 @@ permissions:
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -34,7 +35,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm"
+          cache: npm
           cache-dependency-path: musicmood-frontend/package-lock.json
 
       - name: Install dependencies
@@ -46,7 +47,7 @@ jobs:
         # Assuming your package.json's build script correctly sets the public path if needed
         # e.g., for Create React App, you might need "homepage": "/NLPMusicMood/" in package.json
         # or for Vite, base: '/NLPMusicMood/' in vite.config.js
-        run: CI=false npm run build 
+        run: CI=false npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
