@@ -5,9 +5,10 @@ on:
   push:
     branches:
       - main
-    paths: # Keep paths to only trigger on frontend changes or workflow changes
-      - musicmood-frontend/**
-      - .github/workflows/deploy-frontend.yml
+    # REMOVED paths filter to trigger on every push to main
+    # paths: # Keep paths to only trigger on frontend changes or workflow changes
+    #   - musicmood-frontend/**
+    #   - .github/workflows/deploy-frontend.yml
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
