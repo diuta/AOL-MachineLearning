@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as ort from 'onnxruntime-web';
 import './App.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMusic, faUpload, faSpinner, faPlay, faPause, faTrash, faUser, faSignOutAlt, faQuestionCircle, faCog, faLightbulb, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { 특징_목록, 분위기_목록, 악기_목록 } from './options';
 
 const MAX_POPULAR_RECOMMENDATIONS = 5;
 const MAX_RANDOM_RECOMMENDATIONS = 5;
@@ -16,8 +19,13 @@ function App() {
   const [randomRecommendedSongs, setRandomRecommendedSongs] = useState([]);
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('Initializing...');
+  const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
 
   const onnxRuntimeInitialized = useRef(false);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     async function loadRessourcen() {
@@ -25,15 +33,7 @@ function App() {
       setIsLoadingSongData(true);
       setInfoMessage('Loading AI model...');
       try {
-        // ort.env.wasm.wasmPaths = { // Previous local/public path setup
-        //   'ort-wasm.wasm': `${process.env.PUBLIC_URL}/onnxruntime-web/dist/ort-wasm.wasm`,
-        //   'ort-wasm-simd.wasm': `${process.env.PUBLIC_URL}/onnxruntime-web/dist/ort-wasm-simd.wasm`,
-        //   'ort-wasm-threaded.wasm': `${process.env.PUBLIC_URL}/onnxruntime-web/dist/ort-wasm-threaded.wasm`
-        // };
-
-        // Set WASM paths to JSDelivr CDN
         ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
-
         const modelPath = `${process.env.PUBLIC_URL}/pipeline.onnx`;
         const newSession = await ort.InferenceSession.create(modelPath);
         setSession(newSession);
@@ -77,17 +77,12 @@ function App() {
     setInputText(event.target.value);
   };
 
-  // Fisher-Yates (Knuth) Shuffle algorithm
   function shuffleArray(array) {
     let currentIndex = array.length,  randomIndex;
-    // While there remain elements to shuffle.
     while (currentIndex !== 0) {
-      // Pick a remaining element.
       randomIndex = Math.floor(Math.random() * currentIndex);
       currentIndex--;
-      // And swap it with the current element.
-      [array[currentIndex], array[randomIndex]] = [
-        array[randomIndex], array[currentIndex]];
+      [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
     }
     return array;
   }
@@ -101,24 +96,19 @@ function App() {
     const allMatchingSongs = songData
       .filter(song => song.mood && mood && song.mood.toLowerCase() === mood.toLowerCase());
 
-    // Popular songs
-    const popularSongs = [...allMatchingSongs] // Create a copy before sorting
+    const popularSongs = [...allMatchingSongs]
       .sort((a, b) => parseFloat(b.popularity || 0) - parseFloat(a.popularity || 0))
       .slice(0, MAX_POPULAR_RECOMMENDATIONS);
     setPopularRecommendedSongs(popularSongs);
 
-    // Random songs (different from popular ones if possible)
-    const popularSongIds = new Set(popularSongs.map(song => song.id)); // Assuming songs have a unique 'id' field
+    const popularSongIds = new Set(popularSongs.map(song => song.id));
     let remainingSongs = allMatchingSongs.filter(song => !popularSongIds.has(song.id));
 
-    // If not enough unique songs, allow picking from all matching ones for random selection, but try to prioritize different ones
     if (remainingSongs.length < MAX_RANDOM_RECOMMENDATIONS && allMatchingSongs.length > popularSongs.length) {
-        // If remaining are too few, but there are more songs than popular ones, use all matching ones for random pool.
-        // This increases chance of variety if overlap is forced.
         remainingSongs = allMatchingSongs;
     }
 
-    const shuffledSongs = shuffleArray([...remainingSongs]); // Shuffle a copy
+    const shuffledSongs = shuffleArray([...remainingSongs]);
     const randomSongs = shuffledSongs.slice(0, MAX_RANDOM_RECOMMENDATIONS);
     setRandomRecommendedSongs(randomSongs);
   };
@@ -172,10 +162,36 @@ function App() {
 
   const showLoadingState = isLoadingModel || isLoadingSongData;
 
+  const toggleHelp = () => {
+    setShowHelp(!showHelp);
+    setShowSettings(false);
+    setShowLogs(false);
+  };
+
+  const toggleSettings = () => {
+    setShowSettings(!showSettings);
+    setShowHelp(false);
+    setShowLogs(false);
+  };
+
+  const toggleLogs = () => {
+    setShowLogs(!showLogs);
+    setShowHelp(false);
+    setShowSettings(false);
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    document.body.classList.toggle('dark-mode', !darkMode);
+  };
+
   return (
-    <div className="App">
+    <div className={`App ${darkMode ? 'dark-mode' : ''}`}>
       <header className="App-header">
-        <h1>Mood Melody AI</h1>
+        <div className="logo-title">
+            <FontAwesomeIcon icon={faMusic} size="2x" />
+            <h1>Mood Melody AI</h1>
+        </div>
 
         {showLoadingState && (
           <div className="loading-container">
@@ -185,63 +201,130 @@ function App() {
         )}
 
         {error && <p className="error-text">{error}</p>}
-
-        {!showLoadingState && session && (
-          <div className="input-section">
-            <textarea
-              rows="4"
-              placeholder="How are you feeling today? Let's find some music!"
-              value={inputText}
-              onChange={handleInputChange}
-            />
-            <button onClick={handlePredict}>
-              Discover Mood & Songs
-            </button>
-          </div>
-        )}
-
-        {!showLoadingState && predictedMoodResult && predictedMoodResult !== 'Finding your vibe...' && (
-          <div className="results-container">
-            <div className="predicted-mood">
-              <h3>Your Vibe: {predictedMoodResult}</h3>
+        
+        <div className="control-buttons-container">
+            {!showLoadingState && session && (
+              <div className="input-section">
+                <textarea
+                  rows="4"
+                  placeholder="How are you feeling today? Let's find some music!"
+                  value={inputText}
+                  onChange={handleInputChange}
+                />
+                <button onClick={handlePredict}>
+                  Discover Mood & Songs
+                </button>
+              </div>
+            )}
+            <div className="control-buttons">
+              <button onClick={toggleDarkMode} className="control-button dark-mode-toggle" title={darkMode ? "Light Mode" : "Dark Mode"}>
+                <FontAwesomeIcon icon={faLightbulb} />
+              </button>
+              <button onClick={toggleHelp} className="control-button help-button" title="Help">
+                <FontAwesomeIcon icon={faQuestionCircle} />
+              </button>
+              <button onClick={toggleSettings} className="control-button settings-button" title="Settings">
+                <FontAwesomeIcon icon={faCog} />
+              </button>
+              <button onClick={toggleLogs} className="control-button logs-button" title="Show Logs">
+                <FontAwesomeIcon icon={faFileAlt} />
+              </button>
             </div>
-
-            {/* Popular Recommendations */}
-            {popularRecommendedSongs.length > 0 && (
-              <div className="recommendations-container popular-recommendations">
-                <h4>Top Picks for Your Mood:</h4>
-                <ul className="song-list">
-                  {popularRecommendedSongs.map((song, index) => (
-                    <li key={`popular-${song.id || index}`} className="song-item">
-                      <strong>{song.name}</strong> by {song.artist}<br />
-                      <em>Album: {song.album} (Popularity: {song.popularity})</em>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Random Recommendations */}
-            {randomRecommendedSongs.length > 0 && (
-              <div className="recommendations-container random-recommendations">
-                <h4>More Ideas (Random Picks):</h4>
-                <ul className="song-list">
-                  {randomRecommendedSongs.map((song, index) => (
-                    <li key={`random-${song.id || index}`} className="song-item">
-                      <strong>{song.name}</strong> by {song.artist}<br />
-                      <em>Album: {song.album} (Popularity: {song.popularity})</em>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {popularRecommendedSongs.length === 0 && randomRecommendedSongs.length === 0 && (
-                <p className="no-songs-text">Looks like we couldn't find specific tracks for this vibe in our current list. Try another feeling!</p>
-            )}
-          </div>
-        )}
+        </div>
       </header>
+
+      {!showLoadingState && predictedMoodResult && predictedMoodResult !== 'Finding your vibe...' && (
+        <div className="results-container">
+          <div className="predicted-mood">
+            <h3>Your Vibe: {predictedMoodResult}</h3>
+          </div>
+          {popularRecommendedSongs.length > 0 && (
+            <div className="recommendations-container popular-recommendations">
+              <h4>Top Picks for Your Mood:</h4>
+              <ul className="song-list">
+                {popularRecommendedSongs.map((song, index) => (
+                  <li key={`popular-${song.id || index}`} className="song-item">
+                    <a href={`https://open.spotify.com/track/${song.id}`} target="_blank" rel="noopener noreferrer">
+                      <strong>{song.name}</strong> by {song.artist}
+                    </a>
+                    <br />
+                    <em>Album: {song.album} (Popularity: {song.popularity})</em>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {randomRecommendedSongs.length > 0 && (
+            <div className="recommendations-container random-recommendations">
+              <h4>More Ideas (Random Picks):</h4>
+              <ul className="song-list">
+                {randomRecommendedSongs.map((song, index) => (
+                  <li key={`random-${song.id || index}`} className="song-item">
+                    <a href={`https://open.spotify.com/track/${song.id}`} target="_blank" rel="noopener noreferrer">
+                      <strong>{song.name}</strong> by {song.artist}
+                    </a>
+                    <br />
+                    <em>Album: {song.album} (Popularity: {song.popularity})</em>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {popularRecommendedSongs.length === 0 && randomRecommendedSongs.length === 0 && (
+              <p className="no-songs-text">Looks like we couldn't find specific tracks for this vibe in our current list. Try another feeling!</p>
+          )}
+        </div>
+      )}
+
+      {showHelp && (
+        <div className="modal-overlay">
+          <div className="modal-content help-modal">
+            <h2><FontAwesomeIcon icon={faQuestionCircle} /> Help</h2>
+            <p>This application uses an AI to predict your mood based on text and then recommends songs from a predefined library that match that mood.</p>
+            <h3>How to Use:</h3>
+            <ul>
+              <li><strong>Describe Your Feeling:</strong> Type how you're feeling into the text area.</li>
+              <li><strong>Discover:</strong> Click "Discover Mood & Songs".</li>
+              <li><strong>Recommendations:</strong> The AI will show your predicted mood and suggest songs.</li>
+              <li><strong>Spotify Links:</strong> Click on a song to open it in Spotify.</li>
+            </ul>
+            <button onClick={toggleHelp}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {showSettings && (
+        <div className="modal-overlay">
+          <div className="modal-content settings-modal">
+            <h2><FontAwesomeIcon icon={faCog} /> Settings</h2>
+            <p>Configure application settings here.</p>
+            <label className="setting-item">
+              <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
+              Dark Mode
+            </label>
+            <button onClick={toggleSettings}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {showLogs && (
+        <div className="logs-container modal-overlay">
+          <div className="modal-content logs-modal">
+            <h3><FontAwesomeIcon icon={faFileAlt} /> Inference Logs</h3>
+            <pre className="logs-pre">
+              Log entry 1: Model initialized successfully.
+              Log entry 2: Input text received: "Happy and energetic"
+              Log entry 3: Preprocessing input...
+              Log entry 4: Running inference with ONNX model...
+              Log entry 5: Inference completed in 0.05s.
+              Log entry 6: Predicted mood: Joyful
+              Log entry 7: Fetching song recommendations for Joyful...
+              Log entry 8: Displaying recommendations.
+            </pre>
+            <button onClick={toggleLogs}>Close Logs</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

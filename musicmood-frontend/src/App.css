@@ -263,3 +263,35 @@ button:active {
   50% { transform: translateX(5px); }
   75% { transform: translateX(-5px); }
 }
+
+.logs-container {
+  /* Styles for the logs container can be added here if needed,
+     though some are inline in App.js for dynamic dark mode */
+}
+
+.logs-modal {
+  /* Specific styles for the modal content part of the logs */
+  text-align: left; /* Align text to the left */
+}
+
+.logs-pre {
+  white-space: pre-wrap;    /* Preserves whitespace and wraps text */
+  word-wrap: break-word;    /* Breaks long words to prevent overflow */
+  overflow-wrap: break-word; /* Standard property for word wrapping */
+  text-align: left;         /* Ensure text within pre is left-aligned */
+  max-height: 200px;        /* Or any desired max height for the log content before scrolling */
+  overflow-y: auto;         /* Add scroll if content exceeds max-height */
+  background-color: rgba(0,0,0,0.05); /* Slight background for the pre block */
+  padding: 10px;
+  border-radius: 4px;
+}
+
+/* Dark mode adjustments for logs if not handled by inline styles */
+.dark-mode .logs-modal {
+  /* Dark mode specific styles for log modal if needed */
+}
+
+.dark-mode .logs-pre {
+  background-color: rgba(255,255,255,0.1); /* Lighter background for pre in dark mode */
+  color: #f0f0f0;
+}
