@@ -1,3 +1,15 @@
+:root {
+  --primary-color: #3b82f6; /* Blue-500 from Tailwind */
+  --primary-hover-color: #2563eb; /* Blue-600 from Tailwind */
+  --background-color: #f0f4f8; /* Light blue-gray */
+  --card-background-color: #ffffff;
+  --text-primary-color: #1f2937; /* Gray-800 */
+  --text-secondary-color: #4b5563; /* Gray-600 */
+  --border-color: #d1d5db; /* Gray-300 */
+  --error-color: #ef4444; /* Red-500 */
+  --error-background-color: #fee2e2; /* Red-100 */
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,8 +17,19 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f4f7f6; /* Light grayish background */
-  color: #333;
+  background-color: var(--background-color);
+  color: var(--text-primary-color);
+  line-height: 1.5;
+  /* Adding a subtle animated gradient background */
+  background: linear-gradient(135deg, #e0e7ef, #f0f4f8, #e0e7ef);
+  background-size: 400% 400%;
+  animation: gradientBG 25s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .App {
@@ -16,7 +39,89 @@ body {
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  overflow-x: hidden; /* Prevent horizontal scrollbars from animations */
+  overflow-x: hidden;
+  position: relative; /* For potential absolute positioned decorative elements */
+}
+
+/* Placeholder for animated musical notes */
+.musical-notes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden; /* Keep notes within bounds */
+}
+
+/* Individual note - styles for animated notes */
+.musical-notes .note {
+  position: absolute;
+  display: block;
+  /* Head is styled by .note itself (width, height, border-radius from JS) */
+  /* background-color will be set based on type (filled vs hollow) */
+  opacity: 0;
+  animation-name: floatNote;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  border-radius: 50%; /* Default for head */
+}
+
+/* Stem: Applied to all notes, styled as eighth notes */
+.note::after {
+  content: '';
+  position: absolute;
+  left: calc(50% - 1px); /* Center the stem */
+  bottom: 50%; /* Start stem from center of head */
+  width: 2px; /* Stem thickness */
+  height: 250%; /* Stem length relative to head size */
+  background-color: var(--primary-color);
+  transform-origin: bottom center;
+}
+
+/* Flag: Applied to all notes, styled as eighth notes */
+.note::before {
+  content: '';
+  position: absolute;
+  top: calc(-250% + 2px); /* Relative to head, align with top of stem */
+  left: calc(50% + 1px); /* Attach to the right side of the stem */
+  width: 120%; /* Flag width relative to head size */
+  height: 100%; /* Flag height relative to head size */
+  background-color: var(--primary-color);
+  clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%);
+  transform-origin: top left;
+  transform: skewY(-25deg) translateX(-2px);
+}
+
+/*
+.note[data-note-type="whole"] {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+}
+
+.note[data-note-type="half"] {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+}
+
+.note[data-note-type="quarter"] {
+  background-color: var(--primary-color);
+  border: none;
+}
+*/
+
+/* All notes are styled as eighth notes */
+.note {
+  background-color: var(--primary-color); /* Filled head */
+  border: none;
+  /* Ensure data-note-type attribute doesn't interfere if still present */
+}
+
+.note[data-note-type="eighth"] {
+    /* This can be merged or kept if specific overrides for eighth were needed,
+       but given all are eighth, a general .note style is cleaner.
+       If specific [data-note-type="eighth"] styles were identical to the new .note,
+       this block can be removed. For now, ensuring .note has the primary styles. */
 }
 
 .App-logo {
@@ -31,25 +136,39 @@ body {
 }
 
 .App-header {
-  background-color: #ffffff; /* White card for the main content */
+  background-color: var(--card-background-color);
   padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 16px; /* Slightly larger radius */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); /* Softer, more modern shadow */
   width: 100%;
-  max-width: 700px; /* Max width for content */
-  margin-top: 20px;
+  max-width: 750px; /* Slightly wider */
+  margin-top: 40px; /* More spacing */
+  z-index: 10; /* Ensure header is above background animations */
 }
 
 .App-header h1 {
-  color: #2c3e50; /* Darker blue-gray for title */
-  font-size: 2.5em;
-  margin-bottom: 25px;
-  animation: fadeInDown 0.5s ease-out;
+  color: var(--text-primary-color);
+  font-size: 2.8em; /* Slightly larger */
+  margin-bottom: 30px;
+  font-weight: 600; /* More emphasis */
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.App-header .logo-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px; /* Spacing for logo+title */
+}
+
+.App-header .logo-title svg {
+  margin-right: 15px; /* Space between icon and title */
+  color: var(--primary-color);
 }
 
 .App-header p {
   font-size: 1.1em;
-  color: #555;
+  color: var(--text-secondary-color);
   line-height: 1.6;
 }
 
@@ -76,60 +195,78 @@ body {
 }
 
 .loading-text {
-  color: #3498db; /* Blue for loading text */
+  color: var(--primary-color);
   font-style: italic;
 }
 
 .error-text {
-  color: #e74c3c; /* Red for error messages */
-  background-color: #fdd;
-  border: 1px solid #e74c3c;
-  padding: 10px;
-  border-radius: 5px;
-  margin-top: 15px;
+  color: var(--error-color);
+  background-color: var(--error-background-color);
+  border: 1px solid var(--error-color);
+  padding: 12px 15px; /* More padding */
+  border-radius: 8px;
+  margin-top: 20px;
   animation: shake 0.5s ease-in-out;
 }
 
 textarea {
-  width: calc(100% - 22px); /* Full width minus padding */
-  padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  width: calc(100% - 24px);
+  padding: 14px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
   font-size: 1em;
-  min-height: 60px;
+  min-height: 70px;
   box-sizing: border-box;
   resize: vertical;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #f9fafb; /* Slightly off-white bg for textarea */
+  color: var(--text-primary-color);
 }
 
 textarea:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Use primary color for focus ring */
 }
 
 button {
-  background-color: #3498db; /* Primary blue */
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 12px 25px;
+  padding: 14px 28px;
   font-size: 1.1em;
-  border-radius: 6px;
+  font-weight: 500; /* Medium weight */
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
   margin-top: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
 
 button:hover {
-  background-color: #2980b9; /* Darker blue on hover */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  background-color: var(--primary-hover-color);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.12);
+  transform: translateY(-2px); /* Subtle lift */
 }
 
 button:active {
-  transform: scale(0.98);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transform: translateY(0px) scale(0.98);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.control-button {
+  background-color: transparent;
+  color: var(--text-secondary-color);
+  padding: 8px 12px;
+  margin: 0 5px;
+  box-shadow: none;
+}
+
+.control-button:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: var(--primary-color);
+  transform: translateY(-1px);
 }
 
 .results-container {
@@ -142,9 +279,9 @@ button:active {
 }
 
 .predicted-mood h3 {
-  color: #2c3e50;
-  font-size: 1.8em;
-  margin-bottom: 20px;
+  color: var(--text-primary-color);
+  font-size: 2em;
+  margin-bottom: 25px;
 }
 
 .recommendations-container {
@@ -153,12 +290,11 @@ button:active {
 }
 
 .recommendations-container h4 {
-  font-size: 1.5em;
-  color: #333;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 10px;
-  animation: fadeInRight 0.5s ease-out;
+  font-size: 1.6em;
+  color: var(--text-primary-color);
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 12px;
 }
 
 .song-list {
@@ -167,12 +303,12 @@ button:active {
 }
 
 .song-item {
-  background-color: #f9f9f9; /* Light background for song cards */
-  border: 1px solid #eee;
-  padding: 15px;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  background-color: var(--card-background-color);
+  border: 1px solid #e5e7eb; /* Gray-200 */
+  padding: 18px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   opacity: 0;
   transform: translateY(20px);
@@ -192,15 +328,15 @@ button:active {
 }
 
 .song-item strong {
-  font-size: 1.2em;
-  color: #3498db;
+  font-size: 1.25em;
+  color: var(--primary-color);
   display: block;
   margin-bottom: 5px;
 }
 
 .song-item em {
   font-size: 0.95em;
-  color: #777;
+  color: var(--text-secondary-color);
   display: block;
   line-height: 1.4;
 }
@@ -208,7 +344,7 @@ button:active {
 .no-songs-text {
   margin-top: 15px;
   font-style: italic;
-  color: #777;
+  color: var(--text-secondary-color);
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -306,4 +442,24 @@ button:active {
   padding: 10px;
   border-radius: 4px;
   font-family: 'Courier New', Courier, monospace; /* Monospace font for stats */
+}
+
+/* Refined floatNote animation */
+@keyframes floatNote {
+  0% {
+    opacity: 0;
+    transform: translateY(0vh) translateX(0px) scale(0.5);
+  }
+  20% {
+    opacity: 0.7;
+    transform: translateY(-30vh) translateX(calc(var(--random-xs, 0) * 10px)) scale(1);
+  }
+  80% {
+    opacity: 0.7;
+    transform: translateY(-80vh) translateX(calc(var(--random-xe, 0) * 15px)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) translateX(calc(var(--random-xe, 0) * 20px)) scale(0.5);
+  }
 }

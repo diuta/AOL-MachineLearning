@@ -6,6 +6,85 @@ import { faMusic, faQuestionCircle, faFileAlt, faChartBar } from '@fortawesome/f
 
 const MAX_POPULAR_RECOMMENDATIONS = 5;
 const MAX_RANDOM_RECOMMENDATIONS = 5;
+const NUM_ANIMATED_NOTES = 15;
+// const NOTE_TYPES = ['whole', 'half', 'quarter', 'eighth']; // Define note types
+
+const MOOD_THEMES = {
+  default: {
+    emoji: '🎶',
+    colors: {
+      primary: '#3b82f6', // Blue-500
+      primaryHover: '#2563eb', // Blue-600
+      background: '#f0f4f8', // Light blue-gray
+      cardBackground: '#ffffff',
+      textPrimary: '#1f2937', // Gray-800
+      textSecondary: '#4b5563', // Gray-600
+      borderColor: '#d1d5db', // Gray-300
+    }
+  },
+  joyful: {
+    emoji: '😊',
+    colors: {
+      primary: '#f59e0b', // Amber-500
+      primaryHover: '#d97706', // Amber-600
+      background: '#fffbeb', // Amber-50
+      cardBackground: '#ffffff',
+      textPrimary: '#78350f', // Amber-900
+      textSecondary: '#b45309', // Amber-700
+      borderColor: '#fde68a', // Amber-200
+    }
+  },
+  sad: {
+    emoji: '😢',
+    colors: {
+      primary: '#60a5fa', // Blue-400
+      primaryHover: '#3b82f6', // Blue-500
+      background: '#eef2ff', // Indigo-50 (lighter than e0e7ff)
+      cardBackground: '#f0f4f8',
+      textPrimary: '#374151', // Gray-700
+      textSecondary: '#4b5563', // Gray-600
+      borderColor: '#c7d2fe', // Indigo-200
+    }
+  },
+  energetic: {
+    emoji: '⚡',
+    colors: {
+      primary: '#ec4899', // Pink-500
+      primaryHover: '#db2777', // Pink-600
+      background: '#fdf2f8', // Pink-50 (lighter)
+      cardBackground: '#ffffff',
+      textPrimary: '#831843', // Pink-900
+      textSecondary: '#be185d', // Pink-700
+      borderColor: '#fbcfe8', // Pink-200
+    }
+  },
+  calm: {
+    emoji: '😌',
+    colors: {
+      primary: '#22c55e', // Green-500
+      primaryHover: '#16a34a', // Green-600
+      background: '#f0fdf4', // Green-50
+      cardBackground: '#ffffff',
+      textPrimary: '#14532d', // Green-900
+      textSecondary: '#15803d', // Green-700
+      borderColor: '#bbf7d0', // Green-200
+    }
+  },
+  angry: {
+    emoji: '😠',
+    colors: {
+      primary: '#ef4444', // Red-500 (using error color for primary)
+      primaryHover: '#dc2626', // Red-600
+      background: '#fee2e2', // Red-100 (error background)
+      cardBackground: '#fef2f2', // Red-50 (slightly lighter card)
+      textPrimary: '#7f1d1d', // Red-900
+      textSecondary: '#b91c1c', // Red-700
+      borderColor: '#fecaca', // Red-200
+    }
+  },
+  // Add other moods your model might predict, e.g., relaxed, romantic, etc.
+  // Ensure keys are lowercase for easier matching.
+};
 
 function App() {
   const [session, setSession] = useState(null);
@@ -21,6 +100,8 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [animatedNotes, setAnimatedNotes] = useState([]); // State for animated notes
+  const [currentMoodKey, setCurrentMoodKey] = useState('default'); // State for current mood theme key
 
   const onnxRuntimeInitialized = useRef(false);
 
@@ -68,7 +149,39 @@ function App() {
       loadRessourcen();
       onnxRuntimeInitialized.current = true;
     }
-  }, []);
+
+    // Generate animated notes on mount
+    const notesArray = [];
+    for (let i = 0; i < NUM_ANIMATED_NOTES; i++) {
+      // const type = NOTE_TYPES[Math.floor(Math.random() * NOTE_TYPES.length)]; // Assign random type
+      notesArray.push({
+        id: i,
+        type: 'eighth', // Store the type
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 30 + 70}%`,
+        animationDuration: `${Math.random() * 5 + 7}s`,
+        animationDelay: `${Math.random() * 10}s`,
+        size: `${Math.random() * 8 + 8}px`, // Whole notes slightly larger base size // Simplified size
+        randomXs: Math.random() * 2 - 1,
+        randomXe: Math.random() * 4 - 2,
+      });
+    }
+    setAnimatedNotes(notesArray);
+
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  useEffect(() => {
+    const moodTheme = MOOD_THEMES[currentMoodKey.toLowerCase()] || MOOD_THEMES.default;
+    const colors = moodTheme.colors;
+    document.documentElement.style.setProperty('--primary-color', colors.primary);
+    document.documentElement.style.setProperty('--primary-hover-color', colors.primaryHover);
+    document.documentElement.style.setProperty('--background-color', colors.background);
+    document.documentElement.style.setProperty('--card-background-color', colors.cardBackground);
+    document.documentElement.style.setProperty('--text-primary-color', colors.textPrimary);
+    document.documentElement.style.setProperty('--text-secondary-color', colors.textSecondary);
+    document.documentElement.style.setProperty('--border-color', colors.borderColor);
+    // Error colors are kept constant for now, but could also be themed if desired
+  }, [currentMoodKey]);
 
   const handleInputChange = (event) => {
     setInputText(event.target.value);
@@ -143,15 +256,19 @@ function App() {
       if (outputTensor && outputTensor.data && outputTensor.data.length > 0) {
         const mood = outputTensor.data[0];
         setPredictedMoodResult(mood);
+        const moodKey = mood.toLowerCase();
+        setCurrentMoodKey(MOOD_THEMES[moodKey] ? moodKey : 'default');
         recommendSongsByMood(mood);
       } else {
         setError("Couldn't quite catch that vibe. Try rephrasing?");
         setPredictedMoodResult('');
+        setCurrentMoodKey('default');
       }
     } catch (e) {
       console.error(`Error during prediction: ${e}`);
       setError(`Prediction error: ${e.message}.`);
       setPredictedMoodResult('');
+      setCurrentMoodKey('default');
       setPopularRecommendedSongs([]);
       setRandomRecommendedSongs([]);
     }
@@ -177,8 +294,29 @@ function App() {
     setShowLogs(false);
   };
 
+  const activeTheme = MOOD_THEMES[currentMoodKey.toLowerCase()] || MOOD_THEMES.default;
+
   return (
     <div className="App">
+      <div className="musical-notes">
+        {animatedNotes.map(note => (
+          <div
+            key={note.id}
+            className="note"
+            data-note-type={note.type}
+            style={{
+              left: note.left,
+              top: note.top,
+              width: note.size,
+              height: note.size,
+              animationDuration: note.animationDuration,
+              animationDelay: note.animationDelay,
+              '--random-xs': note.randomXs,
+              '--random-xe': note.randomXe,
+            }}
+          />
+        ))}
+      </div>
       <header className="App-header">
         <div className="logo-title">
             <FontAwesomeIcon icon={faMusic} size="2x" />
@@ -225,7 +363,7 @@ function App() {
       {!showLoadingState && predictedMoodResult && predictedMoodResult !== 'Finding your vibe...' && (
         <div className="results-container">
           <div className="predicted-mood">
-            <h3>Your Vibe: {predictedMoodResult}</h3>
+            <h3>Your Vibe: {predictedMoodResult} {activeTheme.emoji}</h3>
           </div>
           {popularRecommendedSongs.length > 0 && (
             <div className="recommendations-container popular-recommendations">
