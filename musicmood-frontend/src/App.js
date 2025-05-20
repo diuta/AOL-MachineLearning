@@ -13,73 +13,73 @@ const MOOD_THEMES = {
   default: {
     emoji: '🎶',
     colors: {
-      primary: '#3b82f6', // Blue-500
-      primaryHover: '#2563eb', // Blue-600
-      background: '#f0f4f8', // Light blue-gray
+      primary: 'linear-gradient(to right, #3b82f6, #2563eb)',
+      primaryHover: '#1d4ed8', // Darker solid for hover when primary is gradient
+      background: 'linear-gradient(to bottom right, #f0f4f8, #e0e7ff)',
       cardBackground: '#ffffff',
-      textPrimary: '#1f2937', // Gray-800
-      textSecondary: '#4b5563', // Gray-600
-      borderColor: '#d1d5db', // Gray-300
+      textPrimary: '#1f2937',
+      textSecondary: '#4b5563',
+      borderColor: '#d1d5db',
     }
   },
-  joyful: {
+  happy: {
     emoji: '😊',
     colors: {
-      primary: '#f59e0b', // Amber-500
-      primaryHover: '#d97706', // Amber-600
-      background: '#fffbeb', // Amber-50
+      primary: 'linear-gradient(to right, #10b981, #059669)', // Green gradient
+      primaryHover: '#047857', // Darker solid green
+      background: 'linear-gradient(to bottom right, #ecfdf5, #a7f3d0)', // Light green to slightly more saturated green
       cardBackground: '#ffffff',
-      textPrimary: '#78350f', // Amber-900
-      textSecondary: '#b45309', // Amber-700
-      borderColor: '#fde68a', // Amber-200
+      textPrimary: '#065f46',
+      textSecondary: '#047857',
+      borderColor: '#6ee7b7', // Brighter green border
     }
   },
   sad: {
     emoji: '😢',
     colors: {
-      primary: '#60a5fa', // Blue-400
-      primaryHover: '#3b82f6', // Blue-500
-      background: '#eef2ff', // Indigo-50 (lighter than e0e7ff)
+      primary: 'linear-gradient(to right, #60a5fa, #3b82f6)', // Blue gradient
+      primaryHover: '#2563eb', // Darker solid blue
+      background: 'linear-gradient(to bottom right, #eef2ff, #dbeafe)', // Light indigo/blue to slightly darker
       cardBackground: '#f0f4f8',
-      textPrimary: '#374151', // Gray-700
-      textSecondary: '#4b5563', // Gray-600
-      borderColor: '#c7d2fe', // Indigo-200
+      textPrimary: '#374151',
+      textSecondary: '#4b5563',
+      borderColor: '#a5b4fc', // Lighter indigo border
     }
   },
   energetic: {
     emoji: '⚡',
     colors: {
-      primary: '#ec4899', // Pink-500
-      primaryHover: '#db2777', // Pink-600
-      background: '#fdf2f8', // Pink-50 (lighter)
+      primary: 'linear-gradient(to right, #ec4899, #db2777)', // Pink gradient
+      primaryHover: '#be185d', // Darker solid pink
+      background: 'linear-gradient(to bottom right, #fdf2f8, #fce7f3)', // Light pink to slightly more saturated
       cardBackground: '#ffffff',
-      textPrimary: '#831843', // Pink-900
-      textSecondary: '#be185d', // Pink-700
-      borderColor: '#fbcfe8', // Pink-200
+      textPrimary: '#831843',
+      textSecondary: '#be185d',
+      borderColor: '#f9a8d4', // Brighter pink border
     }
   },
   calm: {
     emoji: '😌',
     colors: {
-      primary: '#22c55e', // Green-500
-      primaryHover: '#16a34a', // Green-600
-      background: '#f0fdf4', // Green-50
+      primary: 'linear-gradient(to right, #22c55e, #16a34a)', // Another green gradient for calm
+      primaryHover: '#15803d', // Darker solid green
+      background: 'linear-gradient(to bottom right, #f0fdf4, #ccfbf1)', // Light teal/green to slightly more saturated
       cardBackground: '#ffffff',
-      textPrimary: '#14532d', // Green-900
-      textSecondary: '#15803d', // Green-700
-      borderColor: '#bbf7d0', // Green-200
+      textPrimary: '#14532d',
+      textSecondary: '#15803d',
+      borderColor: '#5eead4', // Brighter teal/green border
     }
   },
   angry: {
     emoji: '😠',
     colors: {
-      primary: '#ef4444', // Red-500 (using error color for primary)
-      primaryHover: '#dc2626', // Red-600
-      background: '#fee2e2', // Red-100 (error background)
-      cardBackground: '#fef2f2', // Red-50 (slightly lighter card)
-      textPrimary: '#7f1d1d', // Red-900
-      textSecondary: '#b91c1c', // Red-700
-      borderColor: '#fecaca', // Red-200
+      primary: 'linear-gradient(to right, #ef4444, #dc2626)', // Red gradient
+      primaryHover: '#b91c1c', // Darker solid red
+      background: 'linear-gradient(to bottom right, #fee2e2, #fecaca)', // Light red to slightly more saturated
+      cardBackground: '#fef2f2',
+      textPrimary: '#7f1d1d',
+      textSecondary: '#b91c1c',
+      borderColor: '#fca5a5', // Brighter red border
     }
   },
   // Add other moods your model might predict, e.g., relaxed, romantic, etc.

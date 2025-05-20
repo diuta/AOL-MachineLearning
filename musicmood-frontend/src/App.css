@@ -17,20 +17,21 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-color);
+  /* background-color: var(--background-color); /* Will be set by background var */
+  background: var(--background-color); /* Use background for gradients */
   color: var(--text-primary-color);
   line-height: 1.5;
-  /* Adding a subtle animated gradient background */
-  background: linear-gradient(135deg, #e0e7ef, #f0f4f8, #e0e7ef);
+  /* Removing the original animated gradient as it is now mood-specific */
+  /* background: linear-gradient(135deg, #e0e7ef, #f0f4f8, #e0e7ef);
   background-size: 400% 400%;
-  animation: gradientBG 25s ease infinite;
+  animation: gradientBG 25s ease infinite; */
 }
 
-@keyframes gradientBG {
+/* @keyframes gradientBG {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
+} */
 
 .App {
   text-align: center;
@@ -52,6 +53,7 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden; /* Keep notes within bounds */
+  z-index: 1; /* Ensure notes are above the main background */
 }
 
 /* Individual note - styles for animated notes */
@@ -75,7 +77,8 @@ body {
   bottom: 50%; /* Start stem from center of head */
   width: 2px; /* Stem thickness */
   height: 250%; /* Stem length relative to head size */
-  background-color: var(--primary-color);
+  /* background-color: var(--primary-color); */
+  background: var(--primary-color); /* Use background for gradient */
   transform-origin: bottom center;
 }
 
@@ -87,7 +90,8 @@ body {
   left: calc(50% + 1px); /* Attach to the right side of the stem */
   width: 120%; /* Flag width relative to head size */
   height: 100%; /* Flag height relative to head size */
-  background-color: var(--primary-color);
+  /* background-color: var(--primary-color); */
+  background: var(--primary-color); /* Use background for gradient */
   clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%);
   transform-origin: top left;
   transform: skewY(-25deg) translateX(-2px);
@@ -112,7 +116,8 @@ body {
 
 /* All notes are styled as eighth notes */
 .note {
-  background-color: var(--primary-color); /* Filled head */
+  /* background-color: var(--primary-color); */ /* Filled head */
+  background: var(--primary-color); /* Use background for gradient */
   border: none;
   /* Ensure data-note-type attribute doesn't interfere if still present */
 }
@@ -227,11 +232,14 @@ textarea {
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Use primary color for focus ring */
+  /* box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Consider updating this if primary is gradient */
+  /* For gradients, a border might be better or a different shadow approach */
+  box-shadow: 0 0 0 3px var(--primary-hover-color); /* Using hover color for a solid ring */
 }
 
 button {
-  background-color: var(--primary-color);
+  /* background-color: var(--primary-color); */
+  background: var(--primary-color); /* Use background for gradients */
   color: white;
   border: none;
   padding: 14px 28px;
@@ -245,7 +253,8 @@ button {
 }
 
 button:hover {
-  background-color: var(--primary-hover-color);
+  /* background-color: var(--primary-hover-color); */
+  background: var(--primary-hover-color); /* Hover is now a solid color */
   box-shadow: 0 5px 10px rgba(0,0,0,0.12);
   transform: translateY(-2px); /* Subtle lift */
 }
@@ -327,9 +336,19 @@ button:active {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
+.song-item a {
+  text-decoration: none;
+  color: var(--text-primary-color); /* Use theme's primary text color for the whole link */
+  transition: color 0.2s ease;
+}
+
+.song-item a:hover {
+  color: var(--primary-hover-color); /* Use solid primary hover color for link hover */
+}
+
 .song-item strong {
   font-size: 1.25em;
-  color: var(--primary-color);
+  /* color: var(--primary-color); Removed to inherit from <a> tag */
   display: block;
   margin-bottom: 5px;
 }
