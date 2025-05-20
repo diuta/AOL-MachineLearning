@@ -295,3 +295,34 @@ button:active {
   background-color: rgba(255,255,255,0.1); /* Lighter background for pre in dark mode */
   color: #f0f0f0;
 }
+
+/* Styles for Stats Modal */
+.stats-container {
+  /* Styles for the stats container can be added here if needed */
+}
+
+.stats-modal {
+  text-align: left;
+}
+
+.stats-pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-align: left;
+  max-height: 200px; /* Adjust as needed */
+  overflow-y: auto;
+  background-color: rgba(0,0,0,0.05);
+  padding: 10px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace; /* Monospace font for stats */
+}
+
+.dark-mode .stats-modal {
+  /* Dark mode specific styles for stats modal if needed */
+}
+
+.dark-mode .stats-pre {
+  background-color: rgba(255,255,255,0.1);
+  color: #f0f0f0;
+}

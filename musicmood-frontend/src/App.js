@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as ort from 'onnxruntime-web';
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMusic, faUpload, faSpinner, faPlay, faPause, faTrash, faUser, faSignOutAlt, faQuestionCircle, faCog, faLightbulb, faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import { 특징_목록, 분위기_목록, 악기_목록 } from './options';
+import { faMusic, faQuestionCircle, faCog, faLightbulb, faFileAlt, faChartBar } from '@fortawesome/free-solid-svg-icons';
 
 const MAX_POPULAR_RECOMMENDATIONS = 5;
 const MAX_RANDOM_RECOMMENDATIONS = 5;
@@ -23,9 +22,9 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   const onnxRuntimeInitialized = useRef(false);
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     async function loadRessourcen() {
@@ -166,18 +165,28 @@ function App() {
     setShowHelp(!showHelp);
     setShowSettings(false);
     setShowLogs(false);
+    setShowStats(false);
   };
 
   const toggleSettings = () => {
     setShowSettings(!showSettings);
     setShowHelp(false);
     setShowLogs(false);
+    setShowStats(false);
   };
 
   const toggleLogs = () => {
     setShowLogs(!showLogs);
     setShowHelp(false);
     setShowSettings(false);
+    setShowStats(false);
+  };
+
+  const toggleStats = () => {
+    setShowStats(!showStats);
+    setShowHelp(false);
+    setShowSettings(false);
+    setShowLogs(false);
   };
 
   const toggleDarkMode = () => {
@@ -228,6 +237,9 @@ function App() {
               </button>
               <button onClick={toggleLogs} className="control-button logs-button" title="Show Logs">
                 <FontAwesomeIcon icon={faFileAlt} />
+              </button>
+              <button onClick={toggleStats} className="control-button stats-button" title="Show Inference Stats">
+                <FontAwesomeIcon icon={faChartBar} />
               </button>
             </div>
         </div>
@@ -322,6 +334,23 @@ function App() {
               Log entry 8: Displaying recommendations.
             </pre>
             <button onClick={toggleLogs}>Close Logs</button>
+          </div>
+        </div>
+      )}
+
+      {showStats && (
+        <div className="stats-container modal-overlay">
+          <div className="modal-content stats-modal">
+            <h3><FontAwesomeIcon icon={faChartBar} /> Inference Statistics</h3>
+            <pre className="stats-pre">
+              Probability for Mood A: 0.75
+              Probability for Mood B: 0.15
+              Probability for Mood C: 0.05
+              Other Probabilities: ...
+              Confidence Score: 0.88
+              Key Features Used: [FeatureX, FeatureY]
+            </pre>
+            <button onClick={toggleStats}>Close Stats</button>
           </div>
         </div>
       )}
