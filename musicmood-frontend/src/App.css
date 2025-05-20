@@ -286,16 +286,6 @@ button:active {
   border-radius: 4px;
 }
 
-/* Dark mode adjustments for logs if not handled by inline styles */
-.dark-mode .logs-modal {
-  /* Dark mode specific styles for log modal if needed */
-}
-
-.dark-mode .logs-pre {
-  background-color: rgba(255,255,255,0.1); /* Lighter background for pre in dark mode */
-  color: #f0f0f0;
-}
-
 /* Styles for Stats Modal */
 .stats-container {
   /* Styles for the stats container can be added here if needed */
@@ -316,13 +306,4 @@ button:active {
   padding: 10px;
   border-radius: 4px;
   font-family: 'Courier New', Courier, monospace; /* Monospace font for stats */
-}
-
-.dark-mode .stats-modal {
-  /* Dark mode specific styles for stats modal if needed */
-}
-
-.dark-mode .stats-pre {
-  background-color: rgba(255,255,255,0.1);
-  color: #f0f0f0;
 }

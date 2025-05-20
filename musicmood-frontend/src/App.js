@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as ort from 'onnxruntime-web';
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMusic, faQuestionCircle, faCog, faLightbulb, faFileAlt, faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { faMusic, faQuestionCircle, faFileAlt, faChartBar } from '@fortawesome/free-solid-svg-icons';
 
 const MAX_POPULAR_RECOMMENDATIONS = 5;
 const MAX_RANDOM_RECOMMENDATIONS = 5;
@@ -19,8 +19,6 @@ function App() {
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('Initializing...');
   const [showHelp, setShowHelp] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [showStats, setShowStats] = useState(false);
 
@@ -163,14 +161,6 @@ function App() {
 
   const toggleHelp = () => {
     setShowHelp(!showHelp);
-    setShowSettings(false);
-    setShowLogs(false);
-    setShowStats(false);
-  };
-
-  const toggleSettings = () => {
-    setShowSettings(!showSettings);
-    setShowHelp(false);
     setShowLogs(false);
     setShowStats(false);
   };
@@ -178,24 +168,17 @@ function App() {
   const toggleLogs = () => {
     setShowLogs(!showLogs);
     setShowHelp(false);
-    setShowSettings(false);
     setShowStats(false);
   };
 
   const toggleStats = () => {
     setShowStats(!showStats);
     setShowHelp(false);
-    setShowSettings(false);
     setShowLogs(false);
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle('dark-mode', !darkMode);
-  };
-
   return (
-    <div className={`App ${darkMode ? 'dark-mode' : ''}`}>
+    <div className="App">
       <header className="App-header">
         <div className="logo-title">
             <FontAwesomeIcon icon={faMusic} size="2x" />
@@ -226,14 +209,8 @@ function App() {
               </div>
             )}
             <div className="control-buttons">
-              <button onClick={toggleDarkMode} className="control-button dark-mode-toggle" title={darkMode ? "Light Mode" : "Dark Mode"}>
-                <FontAwesomeIcon icon={faLightbulb} />
-              </button>
               <button onClick={toggleHelp} className="control-button help-button" title="Help">
                 <FontAwesomeIcon icon={faQuestionCircle} />
-              </button>
-              <button onClick={toggleSettings} className="control-button settings-button" title="Settings">
-                <FontAwesomeIcon icon={faCog} />
               </button>
               <button onClick={toggleLogs} className="control-button logs-button" title="Show Logs">
                 <FontAwesomeIcon icon={faFileAlt} />
@@ -301,20 +278,6 @@ function App() {
               <li><strong>Spotify Links:</strong> Click on a song to open it in Spotify.</li>
             </ul>
             <button onClick={toggleHelp}>Close</button>
-          </div>
-        </div>
-      )}
-
-      {showSettings && (
-        <div className="modal-overlay">
-          <div className="modal-content settings-modal">
-            <h2><FontAwesomeIcon icon={faCog} /> Settings</h2>
-            <p>Configure application settings here.</p>
-            <label className="setting-item">
-              <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
-              Dark Mode
-            </label>
-            <button onClick={toggleSettings}>Close</button>
           </div>
         </div>
       )}
