@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to the main branch
+
+# Grant necessary permissions for the workflow to interact with GitHub Pages
+permissions:
+  contents: read    # To checkout the repository
+  pages: write      # To deploy to GitHub Pages
+  id-token: write   # To authenticate with GitHub Pages
+
+jobs:
+  # Build job: prepares the artifact for deployment
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # You can adjust this if your project needs a specific Node.js version
+
+      - name: Install dependencies and Build React app
+        working-directory: ./musicmood-frontend # Important: run these commands in your app's folder
+        run: |
+          npm install
+          npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5 # Configures GitHub Pages for deployment
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload the build output from the 'musicmood-frontend/build' directory
+          path: ./musicmood-frontend/build
+
+  # Deploy job: deploys the artifact to GitHub Pages
+  deploy:
+    needs: build # This job depends on the 'build' job completing successfully
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # Sets the deployment URL output
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # Deploys the artifact
